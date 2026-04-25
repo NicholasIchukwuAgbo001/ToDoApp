@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Keyboard, TextInput } from "react-native";
+import { Keyboard, TextInput, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -94,8 +94,21 @@ const TodoApp: React.FC = () => {
   }, [addTask]);
 
   const handleLogout = () => {
-    logout();
-    showSuccess("Logged out successfully");
+    Alert.alert(
+      "Logout",
+      "Are you sure you want to logout?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Logout",
+          style: "destructive",
+          onPress: () => {
+            logout();
+            showSuccess("Logged out successfully");
+          },
+        },
+      ],
+    );
   };
 
   return (

@@ -9,16 +9,21 @@ import {
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useAuth } from "../context/AuthContext";
 import { useFlashMessage } from "../context/FlashMessageContext";
 import { styles } from "../styles/authStyles";
+import { useAuth } from "../context/AuthContext";
 
 interface SignUpScreenProps {
   onNavigateToSignIn: () => void;
+  onRegistered: (email: string) => void;
 }
 
-const SignUpScreen: React.FC<SignUpScreenProps> = ({ onNavigateToSignIn }) => {
-  const [name, setName] = useState("");
+const PASSWORD_REGEX =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+const SignUpScreen: React.FC<SignUpScreenProps> = ({ onNavigateToSignIn, onRegistered }) => {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -26,25 +31,31 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ onNavigateToSignIn }) => {
   const { signup } = useAuth();
   const { showSuccess, showError } = useFlashMessage();
 
-  const handleSignUp = async () => {
-    if (!name.trim() || !email.trim() || !password.trim()) {
-      showError("Please fill in all fields");
-      return;
-    }
+  const validate = (): string | null => {
+    if (!firstName.trim()) return "First name is required";
+    if (!lastName.trim()) return "Last name is required";
+    if (!email.trim()) return "Email is required";
+    if (!PASSWORD_REGEX.test(password))
+      return "Password must be 8+ chars with uppercase, lowercase, number & special character";
+    return null;
+  };
 
-    if (password.length < 6) {
-      showError("Password must be at least 6 characters");
+  const handleSignUp = async () => {
+    const validationError = validate();
+    if (validationError) {
+      showError(validationError);
       return;
     }
 
     setIsLoading(true);
-    const success = await signup(name.trim(), email.trim(), password);
+    const result = await signup(firstName.trim(), lastName.trim(), email.trim(), password);
     setIsLoading(false);
 
-    if (!success) {
-      showError("Email already exists");
+    if (result.ok) {
+      showSuccess(result.message ?? "Account created successfully!");
+      onRegistered(email.trim());
     } else {
-      showSuccess("Account created successfully!");
+      showError(result.message ?? "Registration failed. Please try again.");
     }
   };
 
@@ -62,11 +73,25 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ onNavigateToSignIn }) => {
             <Ionicons name="person-outline" size={20} color="#999" style={styles.inputIcon} />
             <TextInput
               style={styles.input}
-              placeholder="Full Name"
+              placeholder="First Name"
               placeholderTextColor="#999"
-              value={name}
-              onChangeText={setName}
+              value={firstName}
+              onChangeText={setFirstName}
               autoCapitalize="words"
+              editable={!isLoading}
+            />
+          </View>
+
+          <View style={styles.inputWrapper}>
+            <Ionicons name="person-outline" size={20} color="#999" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Last Name"
+              placeholderTextColor="#999"
+              value={lastName}
+              onChangeText={setLastName}
+              autoCapitalize="words"
+              editable={!isLoading}
             />
           </View>
 
@@ -81,6 +106,7 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ onNavigateToSignIn }) => {
               keyboardType="email-address"
               autoCapitalize="none"
               autoComplete="email"
+              editable={!isLoading}
             />
           </View>
 
@@ -94,9 +120,18 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ onNavigateToSignIn }) => {
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
               autoComplete="password"
+              editable={!isLoading}
             />
-            <TouchableOpacity onPress={() => setShowPassword((v) => !v)} style={styles.eyeIcon}>
-              <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={20} color="#999" />
+            <TouchableOpacity
+              onPress={() => setShowPassword((v) => !v)}
+              style={styles.eyeIcon}
+              disabled={isLoading}
+            >
+              <Ionicons
+                name={showPassword ? "eye-off-outline" : "eye-outline"}
+                size={20}
+                color="#999"
+              />
             </TouchableOpacity>
           </View>
 
@@ -116,7 +151,7 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ onNavigateToSignIn }) => {
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Already have an account?</Text>
-          <TouchableOpacity onPress={onNavigateToSignIn}>
+          <TouchableOpacity onPress={onNavigateToSignIn} disabled={isLoading}>
             <Text style={styles.footerLink}>Sign In</Text>
           </TouchableOpacity>
         </View>

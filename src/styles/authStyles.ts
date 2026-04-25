@@ -92,4 +92,74 @@ export const styles = StyleSheet.create({
   disabledButton: {
     opacity: 0.6,
   },
+
+  // ── Verify Email ────────────────────────────────────────────────────────
+  backButton: {
+    position: "absolute",
+    top: hp(6),
+    left: wp(6),
+    padding: moderateScale(4),
+  },
+  iconContainer: {
+    alignItems: "center",
+    marginBottom: hp(3),
+  },
+  verifyTitle: {
+    fontSize: moderateScale(26),
+    fontWeight: "bold",
+    color: "#1A1A1A",
+    textAlign: "center",
+    marginBottom: hp(1.5),
+  },
+  verifySubtitle: {
+    fontSize: moderateScale(15),
+    color: "#666",
+    textAlign: "center",
+    lineHeight: moderateScale(22),
+    marginBottom: hp(4),
+  },
+  emailHighlight: {
+    color: "#2196F3",
+    fontWeight: "600",
+  },
+  otpRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: wp(3),
+    marginBottom: hp(4),
+  },
+  otpBox: {
+    width: moderateScale(58),
+    height: moderateScale(62),
+    borderRadius: moderateScale(12),
+    borderWidth: 1.5,
+    borderColor: "#E0E0E0",
+    backgroundColor: "#FFFFFF",
+    textAlign: "center",
+    fontSize: moderateScale(24),
+    fontWeight: "700",
+    color: "#1A1A1A",
+  },
+  otpBoxFilled: {
+    borderColor: "#2196F3",
+    backgroundColor: "#EBF5FF",
+  },
+  resendRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: hp(1),
+  },
+  resendText: {
+    color: "#666",
+    fontSize: moderateScale(14),
+  },
+  resendLink: {
+    color: "#2196F3",
+    fontSize: moderateScale(14),
+    fontWeight: "600",
+  },
+  resendDisabled: {
+    color: "#AAA",
+  },
 });

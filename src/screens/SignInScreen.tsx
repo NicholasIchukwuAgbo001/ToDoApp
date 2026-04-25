@@ -32,13 +32,13 @@ const SignInScreen: React.FC<SignInScreenProps> = ({ onNavigateToSignUp }) => {
     }
 
     setIsLoading(true);
-    const success = await login(email.trim(), password);
+    const result = await login(email.trim(), password);
     setIsLoading(false);
 
-    if (success) {
+    if (result.ok) {
       showSuccess("Welcome back!");
     } else {
-      showError("Invalid email or password");
+      showError(result.message ?? "Invalid email or password");
     }
   };
 
@@ -63,6 +63,7 @@ const SignInScreen: React.FC<SignInScreenProps> = ({ onNavigateToSignUp }) => {
               keyboardType="email-address"
               autoCapitalize="none"
               autoComplete="email"
+              editable={!isLoading}
             />
           </View>
 
@@ -76,8 +77,9 @@ const SignInScreen: React.FC<SignInScreenProps> = ({ onNavigateToSignUp }) => {
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
               autoComplete="password"
+              editable={!isLoading}
             />
-            <TouchableOpacity onPress={() => setShowPassword((v) => !v)} style={styles.eyeIcon}>
+            <TouchableOpacity onPress={() => setShowPassword((v) => !v)} style={styles.eyeIcon} disabled={isLoading}>
               <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={20} color="#999" />
             </TouchableOpacity>
           </View>

@@ -1,137 +1,91 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from "../types/auth";
+import { loginUser, registerUser } from "../services/authService";
 
 interface AuthContextType {
   user: User | null;
+  accessToken: string | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  signup: (name: string, email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<{ ok: boolean; message?: string }>;
+  signup: (firstName: string, lastName: string, email: string, password: string) => Promise<{ ok: boolean; message?: string }>;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const USER_STORAGE_KEY = "@todo_app_user";
-const USERS_STORAGE_KEY = "@todo_app_users";
+const USER_KEY = "@taskly_user";
+const TOKEN_KEY = "@taskly_access_token";
+const REFRESH_KEY = "@taskly_refresh_token";
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({
-  children,
-}) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    loadUser();
+    restoreSession();
   }, []);
 
-  const loadUser = async () => {
+  const restoreSession = async () => {
     try {
-      const storedUser = await AsyncStorage.getItem(USER_STORAGE_KEY);
-      if (storedUser) {
+      const [storedUser, storedToken] = await Promise.all([
+        AsyncStorage.getItem(USER_KEY),
+        AsyncStorage.getItem(TOKEN_KEY),
+      ]);
+      if (storedUser && storedToken) {
         setUser(JSON.parse(storedUser));
+        setAccessToken(storedToken);
       }
-    } catch (error) {
-      console.error("Failed to load user:", error);
+    } catch (err) {
+      console.error("Failed to restore session:", err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    try {
-      const usersJson = await AsyncStorage.getItem(USERS_STORAGE_KEY);
-      const users: Array<{
-        email: string;
-        password: string;
-        name: string;
-        id: string;
-      }> = usersJson ? JSON.parse(usersJson) : [];
-
-      const foundUser = users.find(
-        (u) => u.email === email && u.password === password,
-      );
-
-      if (foundUser) {
-        const loggedInUser: User = {
-          id: foundUser.id,
-          email: foundUser.email,
-          name: foundUser.name,
-        };
-        setUser(loggedInUser);
-        await AsyncStorage.setItem(
-          USER_STORAGE_KEY,
-          JSON.stringify(loggedInUser),
-        );
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error("Login error:", error);
-      return false;
+  const login = async (email: string, password: string) => {
+    const result = await loginUser({ email, password });
+    if (!result.ok) {
+      const errorMap: Record<number, string> = {
+        401: "Invalid email or password",
+        403: "Please verify your email before signing in",
+        404: "No account found with this email",
+      };
+      return { ok: false, message: errorMap[result.statusCode] ?? result.message };
     }
+
+    const { user: apiUser, accessToken: token, refreshToken } = result;
+    setUser(apiUser);
+    setAccessToken(token);
+    await Promise.all([
+      AsyncStorage.setItem(USER_KEY, JSON.stringify(apiUser)),
+      AsyncStorage.setItem(TOKEN_KEY, token),
+      AsyncStorage.setItem(REFRESH_KEY, refreshToken),
+    ]);
+    return { ok: true };
   };
 
-  const signup = async (
-    name: string,
-    email: string,
-    password: string,
-  ): Promise<boolean> => {
-    try {
-      const usersJson = await AsyncStorage.getItem(USERS_STORAGE_KEY);
-      const users: Array<{
-        email: string;
-        password: string;
-        name: string;
-        id: string;
-      }> = usersJson ? JSON.parse(usersJson) : [];
-
-      const existingUser = users.find((u) => u.email === email);
-      if (existingUser) {
-        return false;
-      }
-
-      const newUser = {
-        id: Date.now().toString(),
-        email,
-        password,
-        name,
+  const signup = async (firstName: string, lastName: string, email: string, password: string) => {
+    const result = await registerUser({ firstName, lastName, email, password });
+    if (!result.ok) {
+      const errorMap: Record<number, string> = {
+        409: "An account with this email already exists",
+        400: "Please check your details and try again",
       };
-
-      users.push(newUser);
-      await AsyncStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
-
-      const createdUser: User = {
-        id: newUser.id,
-        email: newUser.email,
-        name: newUser.name,
-      };
-      setUser(createdUser);
-      await AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(createdUser));
-      return true;
-    } catch (error) {
-      console.error("Signup error:", error);
-      return false;
+      return { ok: false, message: errorMap[result.statusCode] ?? result.message };
     }
+    return { ok: true, message: result.message };
   };
 
   const logout = async () => {
-    try {
-      setUser(null);
-      await AsyncStorage.removeItem(USER_STORAGE_KEY);
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
+    setUser(null);
+    setAccessToken(null);
+    await AsyncStorage.multiRemove([USER_KEY, TOKEN_KEY, REFRESH_KEY]);
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, accessToken, isLoading, login, signup, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -139,8 +93,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 };
