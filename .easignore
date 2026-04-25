@@ -1,0 +1,7 @@
+.idea
+.vscode
+.expo
+node_modules
+*.log
+*.lock
+scripts
