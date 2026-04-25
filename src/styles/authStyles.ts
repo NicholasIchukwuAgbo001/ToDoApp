@@ -162,4 +162,21 @@ export const styles = StyleSheet.create({
   resendDisabled: {
     color: "#AAA",
   },
+
+  // ── Social Auth ──────────────────────────────────────────────────────────
+  dividerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: hp(2.5),
+    gap: wp(2),
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#E0E0E0",
+  },
+  dividerText: {
+    color: "#999",
+    fontSize: moderateScale(13),
+  },
 });

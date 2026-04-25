@@ -103,3 +103,25 @@ export async function verifyEmail(
     return { ok: false, message: "Network error. Please check your connection.", statusCode: 0 };
   }
 }
+
+// ── Google Sign-In ────────────────────────────────────────────────────────────
+
+export type GoogleSignInResult =
+  | { ok: true; user: User; accessToken: string; refreshToken: string }
+  | { ok: false; message: string; statusCode: number };
+
+export async function googleSignIn(idToken: string): Promise<GoogleSignInResult> {
+  try {
+    const res = await api.post<{ success: boolean; message: string; data: LoginResponseData; timestamp: string }>(
+      "/auth/google/verify",
+      { idToken },
+    );
+    const { user, accessToken, refreshToken } = res.data;
+    return { ok: true, user, accessToken, refreshToken };
+  } catch (err) {
+    if (err instanceof ApiError) {
+      return { ok: false, message: err.message, statusCode: err.statusCode };
+    }
+    return { ok: false, message: "Network error. Please check your connection.", statusCode: 0 };
+  }
+}

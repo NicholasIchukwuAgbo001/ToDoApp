@@ -2,6 +2,7 @@
   "expo": {
     "name": "Taskly",
     "slug": "taskly",
+    "scheme": "taskly",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
@@ -37,6 +38,9 @@
     },
     "updates": {
       "url": "https://u.expo.dev/8b3597f7-3aeb-448c-9dc0-24dc1929dafa"
-    }
+    },
+    "plugins": [
+      "expo-web-browser"
+    ]
   }
 }

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from "../types/auth";
-import { loginUser, registerUser } from "../services/authService";
+import { loginUser, registerUser, googleSignIn } from "../services/authService";
 
 interface AuthContextType {
   user: User | null;
@@ -9,6 +9,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<{ ok: boolean; message?: string }>;
   signup: (firstName: string, lastName: string, email: string, password: string) => Promise<{ ok: boolean; message?: string }>;
+  googleLogin: (idToken: string) => Promise<{ ok: boolean; message?: string }>;
   logout: () => Promise<void>;
 }
 
@@ -84,8 +85,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     await AsyncStorage.multiRemove([USER_KEY, TOKEN_KEY, REFRESH_KEY]);
   };
 
+  const googleLogin = async (idToken: string) => {
+    const result = await googleSignIn(idToken);
+    if (!result.ok) {
+      return { ok: false, message: result.message };
+    }
+    const { user: apiUser, accessToken: token, refreshToken } = result;
+    setUser(apiUser);
+    setAccessToken(token);
+    await Promise.all([
+      AsyncStorage.setItem(USER_KEY, JSON.stringify(apiUser)),
+      AsyncStorage.setItem(TOKEN_KEY, token),
+      AsyncStorage.setItem(REFRESH_KEY, refreshToken),
+    ]);
+    return { ok: true };
+  };
+
   return (
-    <AuthContext.Provider value={{ user, accessToken, isLoading, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, accessToken, isLoading, login, signup, googleLogin, logout }}>
       {children}
     </AuthContext.Provider>
   );
