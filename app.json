@@ -31,6 +31,12 @@
         "projectId": "8b3597f7-3aeb-448c-9dc0-24dc1929dafa"
       }
     },
-    "owner": "ichukwu_nicholas"
+    "owner": "ichukwu_nicholas",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/8b3597f7-3aeb-448c-9dc0-24dc1929dafa"
+    }
   }
 }
