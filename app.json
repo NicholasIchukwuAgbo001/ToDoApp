@@ -13,6 +13,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#2196F3"
     },
+    "platforms": ["android", "ios"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.taskly.app"
@@ -24,7 +25,6 @@
       },
       "package": "com.taskly.app"
     },
-
     "extra": {
       "eas": {
         "projectId": "8b3597f7-3aeb-448c-9dc0-24dc1929dafa"
