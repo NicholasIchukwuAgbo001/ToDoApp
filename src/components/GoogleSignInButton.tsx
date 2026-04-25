@@ -13,15 +13,14 @@ import { moderateScale, hp, wp } from "../utils/responsive";
 
 WebBrowser.maybeCompleteAuthSession();
 
-const GOOGLE_WEB_CLIENT_ID = "YOUR_GOOGLE_WEB_CLIENT_ID.apps.googleusercontent.com";
-const GOOGLE_ANDROID_CLIENT_ID = "YOUR_GOOGLE_ANDROID_CLIENT_ID.apps.googleusercontent.com";
+const GOOGLE_WEB_CLIENT_ID = "140641298850-mga0svtl0j8g2l778im9lict0sf6mm58.apps.googleusercontent.com";
+const GOOGLE_ANDROID_CLIENT_ID = "140641298850-mga0svtl0j8g2l778im9lict0sf6mm58.apps.googleusercontent.com";
 
 interface GoogleSignInButtonProps {
     onToken: (idToken: string) => Promise<void>;
     disabled?: boolean;
 }
 
-// Google "G" logo using pure Views — no external assets or SVG needed
 const GoogleIcon: React.FC = () => {
     const size = moderateScale(20);
     const half = size / 2;
@@ -30,12 +29,10 @@ const GoogleIcon: React.FC = () => {
 
     return (
         <View style={{ width: size, height: size }}>
-            {/* Four color quadrants */}
             <View style={{ position: "absolute", top: 0, left: 0, width: half, height: half, backgroundColor: "#4285F4", borderTopLeftRadius: half }} />
             <View style={{ position: "absolute", top: 0, right: 0, width: half, height: half, backgroundColor: "#34A853", borderTopRightRadius: half }} />
             <View style={{ position: "absolute", bottom: 0, left: 0, width: half, height: half, backgroundColor: "#EA4335", borderBottomLeftRadius: half }} />
             <View style={{ position: "absolute", bottom: 0, right: 0, width: half, height: half, backgroundColor: "#FBBC05", borderBottomRightRadius: half }} />
-            {/* White inner circle to form the ring */}
             <View style={{
                 position: "absolute",
                 top: stroke,
@@ -45,7 +42,6 @@ const GoogleIcon: React.FC = () => {
                 borderRadius: innerSize / 2,
                 backgroundColor: "#fff",
             }} />
-            {/* Blue crossbar for the "G" */}
             <View style={{
                 position: "absolute",
                 top: half - stroke * 0.65,
