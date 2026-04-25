@@ -24,9 +24,7 @@
       },
       "package": "com.taskly.app"
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
+
     "extra": {
       "eas": {
         "projectId": "8b3597f7-3aeb-448c-9dc0-24dc1929dafa"
