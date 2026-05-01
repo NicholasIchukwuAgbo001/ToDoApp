@@ -12,7 +12,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
 import { useFlashMessage } from "../context/FlashMessageContext";
 import { styles } from "../styles/authStyles";
-import GoogleSignInButton from "../components/GoogleSignInButton";
 
 interface SignUpScreenProps {
   onNavigateToSignIn: () => void;
@@ -29,7 +28,7 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ onNavigateToSignIn, onRegis
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { signup, googleLogin } = useAuth();
+  const { signup } = useAuth();
   const { showSuccess, showError } = useFlashMessage();
 
   const validate = (): string | null => {
@@ -148,21 +147,6 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ onNavigateToSignIn, onRegis
               <Text style={styles.buttonText}>Sign Up</Text>
             )}
           </TouchableOpacity>
-
-          <View style={styles.dividerRow}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>or</Text>
-            <View style={styles.dividerLine} />
-          </View>
-
-          <GoogleSignInButton
-            onToken={async (idToken) => {
-              const result = await googleLogin(idToken);
-              if (result.ok) showSuccess("Welcome!");
-              else showError(result.message ?? "Google sign-in failed");
-            }}
-            disabled={isLoading}
-          />
         </View>
 
         <View style={styles.footer}>
